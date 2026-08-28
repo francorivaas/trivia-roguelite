@@ -48,6 +48,14 @@ public class TriviaBattleManager : MonoBehaviour
     private bool waitingForNextQuestion;
     private bool gameEnded;
 
+    [Header("DAMAGE FEEDBACK")]
+    [SerializeField] private DamageFeedbackUI damageFeedbackUI;
+
+    [SerializeField] private RectTransform playerAttackOrigin;
+    [SerializeField] private RectTransform enemyHitPoint;
+
+    [SerializeField] private RectTransform enemyAttackOrigin;
+    [SerializeField] private RectTransform playerHitPoint;
     private void Start()
     {
         InitializeButtons();
@@ -186,45 +194,34 @@ public class TriviaBattleManager : MonoBehaviour
 
     private void DamageEnemy()
     {
-        int minDamage = Mathf.Min(
-            enemyMinDamageReceived,
-            enemyMaxDamageReceived
-        );
+        int minDamage = Mathf.Min(enemyMinDamageReceived, enemyMaxDamageReceived);
+        int maxDamage = Mathf.Max(enemyMinDamageReceived, enemyMaxDamageReceived);
 
-        int maxDamage = Mathf.Max(
-            enemyMinDamageReceived,
-            enemyMaxDamageReceived
-        );
-
-        int damage = Random.Range(
-            minDamage,
-            maxDamage + 1
-        );
+        int damage = Random.Range(minDamage, maxDamage + 1);
 
         enemyCurrentHealth -= damage;
+        enemyCurrentHealth = Mathf.Max(enemyCurrentHealth, 0);
 
-        enemyCurrentHealth = Mathf.Max(
-            enemyCurrentHealth,
-            0
-        );
-
-        enemyHealthSlider.value =
-            enemyCurrentHealth;
+        enemyHealthSlider.value = enemyCurrentHealth;
 
         if (feedbackText != null)
         {
-            feedbackText.text =
-                "¡Correcto! Hiciste " +
-                damage +
-                " de daño.";
+            feedbackText.text = "¡Correcto! Hiciste " + damage + " de daño.";
+        }
+
+        if (damageFeedbackUI != null)
+        {
+            damageFeedbackUI.ShowHit(
+                damage,
+                playerAttackOrigin,
+                enemyHitPoint,
+                true
+            );
         }
 
         if (enemyDamageVisual != null)
         {
-            enemyDamageVisual.RefreshVisual(
-                enemyCurrentHealth,
-                enemyMaxHealth
-            );
+            enemyDamageVisual.RefreshVisual(enemyCurrentHealth, enemyMaxHealth);
         }
 
         if (enemyCurrentHealth <= 0)
@@ -235,37 +232,29 @@ public class TriviaBattleManager : MonoBehaviour
 
     private void DamagePlayer()
     {
-        int minDamage = Mathf.Min(
-            playerMinDamageReceived,
-            playerMaxDamageReceived
-        );
+        int minDamage = Mathf.Min(playerMinDamageReceived, playerMaxDamageReceived);
+        int maxDamage = Mathf.Max(playerMinDamageReceived, playerMaxDamageReceived);
 
-        int maxDamage = Mathf.Max(
-            playerMinDamageReceived,
-            playerMaxDamageReceived
-        );
-
-        int damage = Random.Range(
-            minDamage,
-            maxDamage + 1
-        );
+        int damage = Random.Range(minDamage, maxDamage + 1);
 
         playerCurrentHealth -= damage;
+        playerCurrentHealth = Mathf.Max(playerCurrentHealth, 0);
 
-        playerCurrentHealth = Mathf.Max(
-            playerCurrentHealth,
-            0
-        );
-
-        playerHealthSlider.value =
-            playerCurrentHealth;
+        playerHealthSlider.value = playerCurrentHealth;
 
         if (feedbackText != null)
         {
-            feedbackText.text =
-                "Incorrecto. Recibiste " +
-                damage +
-                " de daño.";
+            feedbackText.text = "Incorrecto. Recibiste " + damage + " de daño.";
+        }
+
+        if (damageFeedbackUI != null)
+        {
+            damageFeedbackUI.ShowHit(
+                damage,
+                enemyAttackOrigin,
+                playerHitPoint,
+                false
+            );
         }
 
         if (playerCurrentHealth <= 0)
